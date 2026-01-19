@@ -7,81 +7,129 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { margin: 0; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; }
+        /* 讓網頁撐滿全螢幕並垂直置中 */
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            font-family: "標楷體", "DFKai-SB", serif; 
+            background: #f8f9fa; 
+            color: #212529; 
+            overflow-x: hidden;
+        }
         
-        /* 深色模式 */
         body.dark-mode { background: #121212; color: #ffffff; }
 
-        .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #dee2e6; background: #ffffff; }
+        .header { 
+            padding: 30px 20px; 
+            text-align: center; 
+            border-bottom: 2px solid #dee2e6; 
+            background: #ffffff; 
+            width: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
         body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
         
-        .main-title { font-size: 2.5rem; font-weight: 900; display: block; margin-bottom: 5px; color: #000; }
+        .main-title { font-size: 2.2rem; font-weight: 900; display: block; margin-bottom: 5px; color: #000; }
         body.dark-mode .main-title { color: #fff; }
 
         .sub-instruction { 
-            font-size: 1.6rem; 
+            font-size: 1.8rem; 
             font-weight: 700; 
             display: block; 
-            color: #000; 
-            margin-top: 5px;
+            margin-top: 10px;
             line-height: 1.4;
         }
-        body.dark-mode .sub-instruction { font-size: 2rem; color: #fff; }
+        body.dark-mode .sub-instruction { font-size: 2.2rem; color: #fff; }
 
         #display-vote-title { 
-            font-size: 2.2rem; 
+            font-size: 2.5rem; 
             color: #ffc107; 
             display: none; 
             margin-top: 15px; 
             font-weight: 900; 
             text-align: center;
             white-space: pre-wrap;
-            line-height: 1.5;
+            line-height: 1.3;
         }
 
-        /* 投票者介面：按鈕與方框加大 */
-        #user-view { display: none; padding: 40px 10px 60px; }
-        .vote-section { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
-        .vote-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        /* 投票介面：核心調整區 */
+        #user-view { 
+            flex: 1; /* 填滿剩餘高度 */
+            display: none; 
+            flex-direction: column; 
+            justify-content: center; /* 內容垂直置中 */
+            align-items: center; 
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
         
-        /* 加大文字方框 */
+        .vote-section { 
+            display: flex; 
+            justify-content: center; 
+            gap: 60px; /* 三組按鈕的橫向間距 */
+            flex-wrap: wrap; 
+            width: 100%; 
+            max-width: 1200px;
+        }
+
+        .vote-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 20px; /* 標籤與按鈕的垂直間距 */
+        }
+        
+        /* 超大文字方框 */
         .label-box { 
-            width: 180px; 
-            padding: 20px 0; 
-            border-radius: 12px; 
+            width: 220px; 
+            padding: 30px 0; 
+            border-radius: 20px; 
             font-weight: 900; 
-            font-size: 2.2rem; /* 字體加大 */
+            font-size: 2.8rem; /* 字體更巨大 */
             text-align: center; 
             color: #000; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            letter-spacing: 5px;
         }
         .att-label { background-color: #adb5bd; } 
         .pro-label { background-color: #28a745; } 
         .con-label { background-color: #dc3545; } 
         
-        /* 加大圓形按鈕 */
+        /* 超大圓形按鈕 */
         .circle-btn { 
-            width: 180px; 
-            height: 180px; 
+            width: 220px; 
+            height: 220px; 
             border-radius: 50%; 
             border: none; 
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2); 
-            transition: 0.3s;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25); 
+            transition: transform 0.2s, opacity 0.3s;
             opacity: 0.15; 
             cursor: not-allowed; 
             pointer-events: none;
         }
         
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
-        .circle-btn:active { transform: scale(0.95); }
+        .circle-btn:active { transform: scale(0.9); }
         .att-btn { background-color: #6c757d; } 
         .pro-btn { background-color: #28a745; }
         .con-btn { background-color: #dc3545; }
-        .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; border: 5px solid #000; }
+        .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; border: 10px solid #000; }
 
-        /* 列表與監測版面 */
-        #admin-view, #monitor-view { display: none; max-width: 1100px; margin: 40px auto; padding: 0 20px 80px; }
-        .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
+        /* 主席與監測畫面同樣優化間距 */
+        #admin-view, #monitor-view { 
+            display: none; 
+            flex: 1;
+            width: 100%; 
+            max-width: 1300px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+        }
+        .status-header-text { font-size: 2.2rem; font-weight: 700; margin-bottom: 40px; text-align: center; border-bottom: 3px solid #333; padding-bottom: 25px; }
         
         .color-att { color: #ffffff; }
         .color-pro { color: #28a745; }
@@ -90,32 +138,30 @@
         .monitor-list { 
             display: grid;
             grid-template-columns: repeat(4, 1fr); 
-            grid-template-rows: repeat(2, auto); 
-            gap: 20px 40px;
+            gap: 40px 60px;
             list-style: none; 
             padding: 0; 
-            font-size: 2.2rem; 
-            line-height: 1.5; 
+            font-size: 2.6rem; 
         }
         
-        .v-row { color: #555; transition: 0.3s; white-space: nowrap; }
+        .v-row { color: #555; transition: 0.3s; }
         .v-row.v-present { color: #fff; }
         .v-row.v-pro { color: #28a745; }
         .v-row.v-con { color: #dc3545; }
-        .v-num { display: inline-block; width: 60px; font-weight: 900; }
+        .v-num { display: inline-block; width: 80px; font-weight: 900; }
 
-        /* 主席控制區 */
-        .admin-input-section { margin-bottom: 30px; text-align: center; }
+        /* 主席輸入框調大 */
+        .admin-input-section { margin-bottom: 40px; text-align: center; }
         .vote-title-input { 
-            padding: 15px; font-size: 1.6rem; width: 70%; font-family: "標楷體"; 
-            border-radius: 8px; border: 1px solid #555; background: #222; color: #fff;
-            height: 120px; resize: vertical;
+            padding: 25px; font-size: 2rem; width: 85%; font-family: "標楷體"; 
+            border-radius: 15px; border: 1px solid #555; background: #222; color: #fff;
+            height: 180px; line-height: 1.4;
         }
-        .controls { margin-top: 50px; text-align: center; }
-        .action-btn { padding: 15px 40px; font-size: 1.4rem; cursor: pointer; border-radius: 8px; border: none; font-family: "標楷體"; margin: 0 10px; font-weight: 700; }
+        .controls { margin-top: 60px; text-align: center; }
+        .action-btn { padding: 25px 60px; font-size: 1.8rem; cursor: pointer; border-radius: 12px; border: none; font-family: "標楷體"; margin: 0 20px; font-weight: 700; }
         .btn-start { background: #28a745; color: white; }
         .btn-show { background: #007bff; color: white; }
-        .btn-reset { background: #333; color: #777; font-size: 1rem; }
+        .btn-reset { background: #333; color: #777; font-size: 1.2rem; }
     </style>
 </head>
 <body id="main-body">
@@ -162,6 +208,7 @@
     </div>
 
     <script>
+        // (Firebase 配置與邏輯代碼保持不變，同前次)
         const firebaseConfig = {
             apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E",
             databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -191,7 +238,7 @@
             document.getElementById('status-header').style.display = 'none';
             document.getElementById('display-vote-title').style.display = 'block';
         } else {
-            document.getElementById('user-view').style.display = 'block';
+            document.getElementById('user-view').style.display = 'flex';
         }
 
         db.ref().on('value', (snapshot) => {
@@ -236,6 +283,8 @@
             if (view !== 'admin' && view !== 'monitor') {
                 if (config.isLocked) {
                     document.getElementById('att-btn').classList.remove('enabled');
+                    document.getElementById('pro-btn').classList.remove('enabled');
+                    document.getElementById('con-btn').classList.remove('enabled');
                     document.getElementById('status-header').innerText = "＊表決尚未開始，請等候主席指示＊";
                 } else {
                     if (currentUserName) {
