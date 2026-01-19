@@ -32,11 +32,15 @@
     </div>
 
     <script>
-        // --- 請貼入你的 Firebase Config ---
         const firebaseConfig = {
-            apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E",
-            databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "cssc-vote-app"
+  apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E",
+  authDomain: "cssc-vote-app.firebaseapp.com",
+  databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "cssc-vote-app",
+  storageBucket: "cssc-vote-app.firebasestorage.app",
+  messagingSenderId: "648023885211",
+  appId: "1:648023885211:web:29516cc3f95b00f58d4d3e",
+  measurementId: "G-66EHDRFVTR"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database().ref('detailed_votes');
