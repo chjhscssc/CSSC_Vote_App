@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>即時表決器</title>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <style>
+
+        body { margin: 0; font-family: sans-serif; text-align: center; }
+
+        .btn-container { display: flex; height: 70vh; }
+
+        .btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 2rem; cursor: pointer; }
+
+        .pro { background: #28a745; }
+
+        .con { background: #dc3545; }
+
+        .stats { height: 30vh; display: flex; flex-direction: column; justify-content: center; background: #f8f9fa; }
+
+        .bar-container { width: 80%; height: 20px; background: #ddd; margin: 10px auto; border-radius: 10px; overflow: hidden; display: flex; }
+
+        #pro-bar { background: #28a745; width: 50%; transition: 0.5s; }
+
+        #con-bar { background: #dc3545; width: 50%; transition: 0.5s; }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <div class="btn-container">
+
+        <div class="btn pro" onclick="vote('pro')">👍 贊成</div>
+
+        <div class="btn con" onclick="vote('con')">👎 反對</div>
+
+    </div>
+
+
+
+    <div class="stats">
+
+        <div id="total-text">載入中...</div>
+
+        <div class="bar-container">
+
+            <div id="pro-bar"></div>
+
+            <div id="con-bar"></div>
+
+        </div>
+
+        <div id="detail">贊成 0% | 反對 0%</div>
+
+    </div>
+
+
+
+    <script>
+
+        // 替換成你的 Firebase 配置
+
+        const firebaseConfig = {
+
+            apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E",
+
+            databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+            projectId: "cssc-vote-app"
+
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.database().ref('votes');
+
+
+
+        // 投票功能
+
+        function vote(type) {
+
+            if(localStorage.getItem('hasVoted')) {
+
+                alert("你已經表決完囉！");
+
+                return;
+
+            }
+
+            db.child(type).transaction(current => (current || 0) + 1);
+
+            localStorage.setItem('hasVoted', 'true');
+
+        }
+
+
+
+        // 監聽雲端數據變化
+
+        db.on('value', (snapshot) => {
+
+            const data = snapshot.val() || { pro: 0, con: 0 };
+
+            const total = data.pro + data.con;
+
+            const proP = total === 0 ? 50 : (data.pro / total * 100);
+
+            const conP = total === 0 ? 50 : (data.con / total * 100);
+
+
+
+            document.getElementById('pro-bar').style.width = proP + '%';
+
+            document.getElementById('con-bar').style.width = conP + '%';
+
+            document.getElementById('total-text').innerText = `總投票數：${total}`;
+
+            document.getElementById('detail').innerText = `贊成 ${proP.toFixed(1)}% | 反對 ${conP.toFixed(1)}%`;
+
+        });
+
+    </script>
+
+</body>
+
+</html>
