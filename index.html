@@ -10,26 +10,16 @@
         html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow: hidden; }
         body.admin-mode { background: #121212; color: #ffffff; }
 
+        /* 系統大標題：投票頁與管理頁共用 */
+        .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; }
+        body.admin-mode .system-top-title { color: #fff; }
+
         /* --- 標頭區 (僅 Admin/Monitor 顯示) --- */
         .admin-header { display: none; padding: 0 0 30px 0; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
-        .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; color: #fff; }
-        
-        .title-bar { display: flex; align-items: center; width: 100%; height: 80px; position: relative; }
-        
-        /* 議案標題：自動縮放、不換行 */
-        .title-left { 
-            flex: 3; 
-            color: #ffc107; 
-            font-weight: 900; 
-            white-space: nowrap; 
-            overflow: hidden;
-            font-size: clamp(1.2rem, 3.5vw, 2.3rem);
-            transition: all 0.3s ease;
-        }
-        .status-not-started { padding-left: 31%; } /* 初始對齊大標題正下方 */
-        .status-active { padding-left: 8%; }       /* 輸入標題後往左移 */
-
-        /* 右側容器：確保型態與計時器水平對齊且不動 */
+        .title-bar { display: flex; align-items: center; width: 100%; height: 80px; }
+        .title-left { flex: 3; color: #ffc107; font-weight: 900; white-space: nowrap; overflow: hidden; font-size: clamp(1.2rem, 3.5vw, 2.3rem); transition: all 0.3s ease; }
+        .status-not-started { padding-left: 31%; }
+        .status-active { padding-left: 8%; }
         .header-right-group { flex: 3; display: flex; align-items: center; justify-content: flex-start; gap: 40px; }
         .title-mid { display: flex; flex-direction: column; align-items: center; font-size: 1.8rem; font-weight: 900; line-height: 1.2; color: #fff; }
         .title-right { display: flex; align-items: center; gap: 15px; font-weight: 900; color: #fff; }
@@ -37,7 +27,7 @@
         #timer-display { font-size: 3.8rem; color: #ffffff; letter-spacing: 2px; }
 
         /* --- 投票端介面 --- */
-        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; background: #f8f9fa; }
+        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         #status-header { font-size: 2.2rem; margin-bottom: 50px; display: block; font-weight: bold; text-align: center; line-height: 1.4; }
         .text-black { color: #000000; }
         .text-blue { color: #007bff; }
@@ -46,12 +36,12 @@
         .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; opacity: 0.15; cursor: not-allowed; pointer-events: none; transition: opacity 0.3s; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
 
-        /* 投票完成後的全螢幕顯示 */
+        /* 投票完成後全螢幕顯示 */
         #voted-message { display: none; text-align: center; background: #121212; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 100; flex-direction: column; justify-content: center; align-items: center; }
         .huge-voted-text { font-size: 5rem; font-weight: 900; color: #28a745; line-height: 1.6; margin-bottom: 50px; }
         .sync-timer-huge { font-size: 10rem; color: #ffffff; font-weight: 900; }
 
-        /* --- 行政與監測通用 --- */
+        /* 行政與監測通用 */
         .status-bar { font-size: 2.2rem; font-weight: 900; margin: 15px 0; text-align: center; }
         .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
         .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px 60px; list-style: none; padding: 0; margin: 0 auto; font-size: 2.5rem; width: fit-content; }
@@ -64,8 +54,9 @@
 </head>
 <body>
 
+    <div class="system-top-title">臺北市私立靜心高級中學學生會議案表決系統</div>
+
     <div id="header-section" class="admin-header">
-        <div class="system-top-title">臺北市私立靜心高級中學學生會議案表決系統</div>
         <div class="title-bar">
             <div id="display-vote-title" class="title-left status-not-started">表決尚未開始</div>
             <div class="header-right-group">
