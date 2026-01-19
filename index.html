@@ -15,14 +15,7 @@
         .header { padding: 50px 20px; text-align: center; border-bottom: 1px solid #dee2e6; background: #ffffff; }
         body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
         
-        /* 標題與副標題設定 */
-        .main-title { 
-            font-size: 2.5rem; 
-            font-weight: 900; 
-            display: block; 
-            margin-bottom: 15px; 
-            color: #000;
-        }
+        .main-title { font-size: 2.5rem; font-weight: 900; display: block; margin-bottom: 15px; color: #000; }
         body.dark-mode .main-title { color: #fff; }
 
         .sub-instruction { 
@@ -31,35 +24,55 @@
             display: block; 
             color: #000; 
             margin-top: 10px;
+            line-height: 1.6;
         }
         body.dark-mode .sub-instruction { color: #fff; }
 
-        /* 投票者介面 */
-        #user-view { display: none; padding: 60px 10px; }
-        .vote-section { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        /* 姓名輸入區塊 */
+        .auth-section { margin: 30px auto; text-align: center; }
+        .name-input { 
+            padding: 12px 15px; font-size: 1.2rem; border: 2px solid #adb5bd; border-radius: 8px; 
+            font-family: "標楷體"; width: 180px; outline: none;
+        }
+        .confirm-btn {
+            padding: 12px 25px; font-size: 1.2rem; background: #007bff; color: white; border: none;
+            border-radius: 8px; cursor: pointer; font-family: "標楷體"; margin-left: 10px; font-weight: 700;
+        }
+        .confirm-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* 投票者介面按鈕 */
+        #user-view { display: none; padding: 20px 10px 80px; }
+        .vote-section { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-top: 20px; }
         .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         .label-box { width: 140px; padding: 15px 0; border-radius: 8px; font-weight: 700; font-size: 1.8rem; text-align: center; color: #000; }
         .att-label { background-color: #adb5bd; } 
         .pro-label { background-color: #28a745; } 
         .con-label { background-color: #dc3545; } 
-        .circle-btn { width: 140px; height: 140px; border-radius: 50%; border: none; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        /* 按鈕樣式：預設暗掉且不可點擊 */
+        .circle-btn { 
+            width: 140px; height: 140px; border-radius: 50%; border: none; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s;
+            opacity: 0.15; cursor: not-allowed; pointer-events: none;
+        }
         .att-btn { background-color: #6c757d; } 
-        .pro-btn { background-color: #28a745; opacity: 0.15; pointer-events: none; }
-        .con-btn { background-color: #dc3545; opacity: 0.15; pointer-events: none; }
-        .circle-btn.enabled { opacity: 1; pointer-events: auto; }
-        .circle-btn.checked { opacity: 0.5; }
+        .pro-btn { background-color: #28a745; }
+        .con-btn { background-color: #dc3545; }
+
+        /* 啟用狀態：亮起且可點擊 */
+        .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
+        /* 鎖定狀態：點擊後維持半透明 */
+        .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
         /* 主席與監測介面 */
         #admin-view, #monitor-view { display: none; max-width: 850px; margin: 40px auto; padding: 0 20px 80px; }
         .status-header-text { font-size: 1.8rem; font-weight: 700; margin-bottom: 35px; text-align: center; line-height: 1.8; border-bottom: 2px solid #333; padding-bottom: 20px; }
-        
         .monitor-list { list-style: none; padding: 0; font-size: 2rem; line-height: 2.5; }
         .voter-name.v-absent { color: #555; } 
         .voter-name.v-present { color: #fff; } 
         .voter-name.v-pro { color: #28a745; } 
         .voter-name.v-con { color: #dc3545; }
 
-        /* 控制按鈕 */
         .controls { margin-top: 50px; text-align: center; }
         .action-btn { padding: 15px 40px; font-size: 1.4rem; cursor: pointer; border-radius: 8px; border: none; font-family: "標楷體"; margin: 0 10px; font-weight: 700; }
         .btn-show { background: #007bff; color: white; }
@@ -70,22 +83,27 @@
 
     <div class="header">
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
-        <span id="status-header" class="sub-instruction"></span>
+        <span id="status-header" class="sub-instruction">*請先輸入姓名驗證身分，驗證後按下出席按鈕，再進行表決*</span>
     </div>
 
     <div id="user-view">
+        <div class="auth-section" id="auth-box">
+            <input type="text" id="name-input-field" class="name-input" placeholder="輸入姓名">
+            <button id="verify-btn" class="confirm-btn" onclick="verifyUser()">確認身分</button>
+        </div>
+
         <div class="vote-section">
             <div class="vote-container">
                 <div id="att-label-text" class="label-box att-label">出席</div>
-                <button id="att-btn" class="circle-btn att-btn" onclick="executeAttendance()"></button>
+                <button id="att-btn" class="circle-btn att-btn" onclick="markAttendance()"></button>
             </div>
             <div class="vote-container">
                 <div class="label-box pro-label">贊成</div>
-                <button id="pro-btn" class="circle-btn pro-btn" onclick="executeVote('贊成')"></button>
+                <button id="pro-btn" class="circle-btn pro-btn" onclick="submitVote('贊成')"></button>
             </div>
             <div class="vote-container">
                 <div class="label-box con-label">反對</div>
-                <button id="con-btn" class="circle-btn con-btn" onclick="executeVote('反對')"></button>
+                <button id="con-btn" class="circle-btn con-btn" onclick="submitVote('反對')"></button>
             </div>
         </div>
     </div>
@@ -94,8 +112,8 @@
         <div id="admin-status-text" class="status-header-text"></div>
         <ul id="admin-monitor-list" class="monitor-list"></ul>
         <div class="controls">
-            <button class="action-btn btn-show" onclick="setShowResult(true)">顯示結果</button>
-            <button class="action-btn btn-reset" onclick="adminReset()">系統重置</button>
+            <button class="action-btn btn-show" onclick="updateConfig(true)">顯示結果</button>
+            <button class="action-btn btn-reset" onclick="resetSystem()">系統重置</button>
         </div>
     </div>
 
@@ -116,14 +134,15 @@
         const dbAttendance = db.ref('attendance_list');
         const dbConfig = db.ref('system_config');
 
-        // 已將謝佳杰移至首位
         const allowedUsers = ["謝佳杰", "劉孟芊", "王瑋彤", "任右庭", "張嫚芳", "李致寬", "楊桂愷", "張丞萱"];
         let currentUserName = "";
+        let isAttended = false;
         let hasVoted = false;
 
         const urlParams = new URLSearchParams(window.location.search);
         const view = urlParams.get('view');
 
+        // 初始化視圖
         if (view === 'admin') {
             document.body.classList.add('dark-mode');
             document.getElementById('admin-view').style.display = 'block';
@@ -134,9 +153,9 @@
             document.getElementById('status-header').innerText = "議事即時監測";
         } else {
             document.getElementById('user-view').style.display = 'block';
-            document.getElementById('status-header').innerText = "請點擊按鈕確認出席身份";
         }
 
+        // 監聽 Firebase 數據
         db.ref().on('value', (snapshot) => {
             const data = snapshot.val() || {};
             const votes = data.detailed_votes || {};
@@ -150,20 +169,22 @@
                 if (v.choice === '贊成') proCount++; else conCount++;
             });
 
-            function renderList(elementId) {
-                const el = document.getElementById(elementId);
+            // 渲染列表
+            const render = (id) => {
+                const el = document.getElementById(id);
                 if(!el) return;
                 el.innerHTML = "";
                 allowedUsers.forEach((name, index) => {
-                    let stateClass = "v-absent";
-                    if (voterChoiceMap[name]) stateClass = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
-                    else if (attendance[name]) stateClass = "v-present";
-                    el.innerHTML += `<li class="voter-line">${index + 1}. <span class="voter-name ${stateClass}">${name}</span></li>`;
+                    let state = "v-absent";
+                    if (voterChoiceMap[name]) state = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
+                    else if (attendance[name]) state = "v-present";
+                    el.innerHTML += `<li class="voter-line">${index + 1}. <span class="voter-name ${state}">${name}</span></li>`;
                 });
-            }
-            renderList('admin-monitor-list');
-            renderList('shared-monitor-list');
+            };
+            render('admin-monitor-list');
+            render('shared-monitor-list');
 
+            // 狀態列更新
             const statusContent = config.showResult 
                 ? `出席：<span style="color:#fff">${attCount} 人</span> | 贊成：<span style="color:#28a745">${proCount} 票</span> | 反對：<span style="color:#dc3545">${conCount} 票</span>`
                 : `出席：<span style="color:#fff">白色</span> | 贊成：<span style="color:#28a745">綠色</span> | 反對：<span style="color:#dc3545">紅色</span>`;
@@ -171,48 +192,72 @@
             if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = statusContent;
             if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = statusContent;
 
-            if (currentUserName !== "") {
+            // 投票者端自動同步狀態
+            if (currentUserName) {
                 if (voterChoiceMap[currentUserName]) {
                     hasVoted = true;
-                    document.getElementById('pro-btn').classList.remove('enabled');
-                    document.getElementById('con-btn').classList.remove('enabled');
-                    document.getElementById('status-header').innerText = `＊身份確認：${currentUserName} (已完成投票)＊`;
+                    lockAllButtons();
+                    document.getElementById('status-header').innerText = `＊${currentUserName}，您已完成表決。＊`;
                 } else if (attendance[currentUserName]) {
-                    document.getElementById('pro-btn').classList.add('enabled');
-                    document.getElementById('con-btn').classList.add('enabled');
+                    isAttended = true;
+                    unlockVoteButtons();
                     document.getElementById('att-btn').classList.add('checked');
                     document.getElementById('att-label-text').innerText = currentUserName;
-                    document.getElementById('status-header').innerText = `＊身份確認：${currentUserName} (請進行表決)＊`;
+                    document.getElementById('status-header').innerText = `＊身份確認：${currentUserName}，請進行表決＊`;
                 }
             }
         });
 
-        function executeAttendance() {
-            let nameInput = prompt("請輸入姓名：");
-            if (!nameInput) return;
-            let trimmed = nameInput.trim();
-            if (!allowedUsers.includes(trimmed)) { alert("無表決權限"); return; }
-            currentUserName = trimmed;
+        // 1. 驗證姓名
+        function verifyUser() {
+            const input = document.getElementById('name-input-field').value.trim();
+            if (!allowedUsers.includes(input)) {
+                alert("查無此身分，請輸入正確姓名");
+                return;
+            }
+            currentUserName = input;
+            // 隱藏輸入區並解鎖出席按鈕
+            document.getElementById('auth-box').style.display = "none";
+            document.getElementById('att-btn').classList.add('enabled');
+            document.getElementById('status-header').innerText = `＊${currentUserName} 您好，請按下出席按鈕＊`;
+        }
+
+        // 2. 按下出席
+        function markAttendance() {
+            if (!currentUserName || isAttended) return;
             dbAttendance.child(currentUserName).set(true);
         }
 
-        function executeVote(choice) {
-            if (!currentUserName || hasVoted) return;
+        // 3. 提交表決
+        function submitVote(choice) {
+            if (!isAttended || hasVoted) return;
             if (confirm(`確認投下「${choice}」？`)) {
                 dbVotes.push({ name: currentUserName, choice: choice, timestamp: Date.now() });
             }
         }
 
-        function setShowResult(val) {
+        function unlockVoteButtons() {
+            document.getElementById('pro-btn').classList.add('enabled');
+            document.getElementById('con-btn').classList.add('enabled');
+        }
+
+        function lockAllButtons() {
+            document.getElementById('pro-btn').classList.remove('enabled');
+            document.getElementById('con-btn').classList.remove('enabled');
+            document.getElementById('pro-btn').classList.add('checked');
+            document.getElementById('con-btn').classList.add('checked');
+        }
+
+        function updateConfig(val) {
             dbConfig.set({ showResult: val });
         }
 
-        function adminReset() {
+        function resetSystem() {
             if (prompt("管理密碼：") === "0126") {
                 dbVotes.set(null);
                 dbAttendance.set(null);
                 dbConfig.set({ showResult: false });
-                alert("系統已重設");
+                location.reload(); // 重整頁面讓投票者狀態清空
             }
         }
     </script>
