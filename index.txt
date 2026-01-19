@@ -20,8 +20,8 @@
 <body>
 
     <div class="btn-container">
-        <button class="btn pro" onclick="submitVote('贊成')">👍 贊成</button>
-        <button class="btn con" onclick="submitVote('反對')">👎 反對</button>
+        <button class="btn pro" onclick="submitVote('贊成')">贊成</button>
+        <button class="btn con" onclick="submitVote('反對')">反對</button>
     </div>
 
     <div class="result-section">
