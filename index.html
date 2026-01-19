@@ -16,14 +16,26 @@
             line-height: 1.6; 
         }
         
+        /* 頁首標題區塊 */
         .header { padding: 40px 20px 20px; background: #ffffff; text-align: center; border-bottom: 1px solid #dee2e6; }
-        .status-header { 
+        
+        .main-title { 
             font-size: 1.8rem; 
             font-weight: 700; 
             color: #1a1a1a; 
-            white-space: pre-line; 
+            display: block;
+            margin-bottom: 10px;
         }
 
+        /* 提示文字縮小 */
+        .sub-instruction {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #495057;
+            display: block;
+        }
+
+        /* 三大操作區 */
         .vote-section { 
             display: flex; 
             justify-content: center; 
@@ -34,6 +46,7 @@
         }
         .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
+        /* 標籤方框 (顏色填滿，移除外框，1.8rem字體) */
         .label-box { 
             width: 140px; 
             padding: 15px 0; 
@@ -83,8 +96,8 @@
 <body>
 
     <div class="header">
-        <div id="status-header" class="status-header">臺北市私立靜心高級中學學生會議案表決系統
-＊請先點擊灰色按鈕確認出席並填入名字後再進行表決＊</div>
+        <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
+        <span id="status-header" class="sub-instruction">＊請先點擊灰色按鈕確認出席並填入名字後再進行表決＊</span>
     </div>
 
     <div class="vote-section">
@@ -133,39 +146,30 @@
         const db = firebase.database().ref('detailed_votes');
 
         let currentUserName = "";
-        let hasVoted = false; // 用於追蹤當前資料庫中是否已有該名字
+        let hasVoted = false;
 
-        // 核心邏輯：即時監聽資料庫
         db.on('value', (snapshot) => {
             const listDiv = document.getElementById('detail-list');
             listDiv.innerHTML = "";
             let proNames = [], conNames = [];
-            let allVoterNames = []; // 存下所有已投票人的名字
+            let allVoterNames = [];
 
             snapshot.forEach((child) => {
                 const data = child.val();
                 allVoterNames.push(data.name);
-                
                 if (data.choice === '贊成') proNames.push(data.name);
                 else if (data.choice === '反對') conNames.push(data.name);
 
                 const color = data.choice === '贊成' ? '#28a745' : '#dc3545';
-                listDiv.innerHTML += `
-                    <div class="vote-item">
-                        <span>${data.name}</span>
-                        <span class="tag" style="background:${color}">${data.choice}</span>
-                    </div>
-                `;
+                listDiv.innerHTML += `<div class="vote-item"><span>${data.name}</span><span class="tag" style="background:${color}">${data.choice}</span></div>`;
             });
 
-            // 更新統計數據
             document.getElementById('pro-total').innerText = proNames.length;
             document.getElementById('pro-names').innerText = proNames.length > 0 ? "名單：" + proNames.join('、') : "";
             document.getElementById('con-total').innerText = conNames.length;
             document.getElementById('con-names').innerText = conNames.length > 0 ? "名單：" + conNames.join('、') : "";
             document.getElementById('grand-total').innerText = `累計總票數：${proNames.length + conNames.length} 票`;
 
-            // 【重要】檢查當前使用者是否在名單中。如果資料被刪除了，這裡會變成 false，使用者就可以再投。
             if (currentUserName !== "" && allVoterNames.includes(currentUserName)) {
                 hasVoted = true;
                 lockButtonsAfterVote();
@@ -183,10 +187,8 @@
             }
             currentUserName = nameInput.trim();
             
-            // 這裡不直接鎖死，而是透過即時監聽判斷
-            document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n身份已確認：${currentUserName}，請進行表決`;
+            document.getElementById('status-header').innerText = `＊身份已確認：${currentUserName}，請進行表決＊`;
             
-            // 初次確認後先開啟按鈕權限，稍後 db.on 會判斷是否鎖上
             document.getElementById('pro-btn').classList.add('enabled');
             document.getElementById('con-btn').classList.add('enabled');
             
@@ -201,40 +203,31 @@
                 return;
             }
             if (hasVoted) {
-                alert("系統紀錄顯示您針對本議案已完成表決，無法重複投票。");
+                alert("系統紀錄顯示您已完成表決。");
                 return;
             }
             if (confirm(`確認針對本議案投下「${choice}」票？`)) {
-                db.push({
-                    name: currentUserName,
-                    choice: choice,
-                    timestamp: Date.now()
-                }).then(() => {
-                    alert("表決紀錄已成功提交。");
-                });
+                db.push({ name: currentUserName, choice: choice, timestamp: Date.now() });
             }
         }
 
-        // 鎖定表決按鈕
         function lockButtonsAfterVote() {
             document.getElementById('pro-btn').classList.remove('enabled');
             document.getElementById('con-btn').classList.remove('enabled');
-            document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n${currentUserName}，您已完成本議案表決。`;
+            document.getElementById('status-header').innerText = `＊${currentUserName}，您已完成本議案表決。＊`;
         }
 
-        // 解鎖表決按鈕（當後台資料被刪除時自動觸發）
         function unlockButtonsForNewVote() {
             document.getElementById('pro-btn').classList.add('enabled');
             document.getElementById('con-btn').classList.add('enabled');
-            document.getElementById('status-header').innerText = `臺北市私立靜心高級中學學生會議案表決系統\n身份已確認：${currentUserName}，請進行表決`;
+            document.getElementById('status-header').innerText = `＊身份已確認：${currentUserName}，請進行表決＊`;
         }
 
         function adminReset() {
             if (prompt("請輸入管理權限密碼：") === "0126") {
                 if (confirm("警告：此操作將永久清除所有原始表決數據，是否繼續？")) {
-                    db.set(null); // 清空 Firebase 資料庫
-                    // 不再需要重新整理網頁，db.on 會自動幫所有人解鎖
-                    alert("資料已清空，所有人員皆可重新投票。");
+                    db.set(null);
+                    alert("資料已清空。");
                 }
             }
         }
