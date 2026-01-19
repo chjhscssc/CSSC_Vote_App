@@ -18,7 +18,7 @@
         .main-title { font-size: 2.5rem; font-weight: 900; display: block; margin-bottom: 15px; color: #000; }
         body.dark-mode .main-title { color: #fff; }
 
-        /* 調整監測畫面文字大小一致 */
+        /* 監測端文字樣式 */
         .sub-instruction { 
             font-size: 1.4rem; 
             font-weight: 700; 
@@ -27,15 +27,16 @@
             margin-top: 10px;
             line-height: 1.6;
         }
-        body.dark-mode .sub-instruction { font-size: 2rem; color: #fff; } /* 監測端文字變大 */
+        body.dark-mode .sub-instruction { font-size: 2rem; color: #fff; }
 
-        /* 標題顯示樣式 */
+        /* 表決標題樣式 (現在移到下方) */
         #display-vote-title { 
             font-size: 2rem; 
             color: #ffc107; 
             display: none; 
-            margin-bottom: 10px; 
+            margin-top: 20px; 
             font-weight: 900; 
+            text-align: center;
         }
 
         /* 主席專用輸入區 */
@@ -87,7 +88,6 @@
 <body id="main-body">
 
     <div class="header">
-        <div id="display-vote-title">表決尚未開始</div>
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
         <span id="status-header" class="sub-instruction">*請先按下出席按鈕，輸入姓名驗證身分後再進行表決*</span>
     </div>
@@ -120,11 +120,13 @@
             <button class="action-btn btn-show" onclick="setShowResult(true)">顯示結果</button>
             <button class="action-btn btn-reset" onclick="adminReset()">系統重置</button>
         </div>
+        <div id="display-vote-title-admin" style="font-size: 2rem; color: #ffc107; text-align: center; margin-top: 30px; font-weight: 900;">表決尚未開始</div>
     </div>
 
     <div id="monitor-view">
         <div id="monitor-status-text" class="status-header-text"></div>
         <ul id="shared-monitor-list" class="monitor-list"></ul>
+        <div id="display-vote-title">表決尚未開始</div>
     </div>
 
     <script>
@@ -173,9 +175,13 @@
                 if (v.choice === '贊成') proCount++; else conCount++;
             });
 
-            // 更新監測畫面標題
-            if(view === 'monitor') {
-                document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
+            // 更新監測畫面與主席畫面的標題
+            const currentTitle = config.voteTitle || "表決尚未開始";
+            if(document.getElementById('display-vote-title')) {
+                document.getElementById('display-vote-title').innerText = currentTitle;
+            }
+            if(document.getElementById('display-vote-title-admin')) {
+                document.getElementById('display-vote-title-admin').innerText = currentTitle;
             }
 
             const render = (id) => {
@@ -200,7 +206,6 @@
             if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = statusContent;
             if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = statusContent;
 
-            // 投票者頁面邏輯修正
             if (view !== 'admin' && view !== 'monitor') {
                 if (config.isLocked) {
                     document.getElementById('att-btn').classList.remove('enabled');
