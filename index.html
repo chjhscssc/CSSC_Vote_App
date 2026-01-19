@@ -7,156 +7,43 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* 讓網頁撐滿全螢幕並垂直置中 */
-        html, body { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            font-family: "標楷體", "DFKai-SB", serif; 
-            background: #f8f9fa; 
-            color: #212529; 
-            overflow-x: hidden;
-        }
-        
+        /* (這裡保留你之前要求的所有巨大化樣式與 flex 置中設定) */
+        html, body { height: 100%; margin: 0; padding: 0; display: flex; flex-direction: column; font-family: "標楷體", "DFKai-SB", serif; background: #f8f9fa; color: #212529; overflow-x: hidden; }
         body.dark-mode { background: #121212; color: #ffffff; }
-
-        .header { 
-            padding: 30px 20px; 
-            text-align: center; 
-            border-bottom: 2px solid #dee2e6; 
-            background: #ffffff; 
-            width: 100%;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
+        .header { padding: 30px 20px; text-align: center; border-bottom: 2px solid #dee2e6; background: #ffffff; width: 100%; box-sizing: border-box; flex-shrink: 0; }
         body.dark-mode .header { background: #1a1a1a; border-bottom: 1px solid #333; }
-        
         .main-title { font-size: 2.2rem; font-weight: 900; display: block; margin-bottom: 5px; color: #000; }
         body.dark-mode .main-title { color: #fff; }
-
-        .sub-instruction { 
-            font-size: 1.8rem; 
-            font-weight: 700; 
-            display: block; 
-            margin-top: 10px;
-            line-height: 1.4;
-        }
+        .sub-instruction { font-size: 1.8rem; font-weight: 700; display: block; margin-top: 10px; line-height: 1.4; }
         body.dark-mode .sub-instruction { font-size: 2.2rem; color: #fff; }
-
-        #display-vote-title { 
-            font-size: 2.5rem; 
-            color: #ffc107; 
-            display: none; 
-            margin-top: 15px; 
-            font-weight: 900; 
-            text-align: center;
-            white-space: pre-wrap;
-            line-height: 1.3;
-        }
-
-        /* 投票介面：核心調整區 */
-        #user-view { 
-            flex: 1; /* 填滿剩餘高度 */
-            display: none; 
-            flex-direction: column; 
-            justify-content: center; /* 內容垂直置中 */
-            align-items: center; 
-            padding: 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .vote-section { 
-            display: flex; 
-            justify-content: center; 
-            gap: 60px; /* 三組按鈕的橫向間距 */
-            flex-wrap: wrap; 
-            width: 100%; 
-            max-width: 1200px;
-        }
-
-        .vote-container { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 20px; /* 標籤與按鈕的垂直間距 */
-        }
-        
-        /* 超大文字方框 */
-        .label-box { 
-            width: 220px; 
-            padding: 30px 0; 
-            border-radius: 20px; 
-            font-weight: 900; 
-            font-size: 2.8rem; /* 字體更巨大 */
-            text-align: center; 
-            color: #000; 
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-            letter-spacing: 5px;
-        }
+        #display-vote-title { font-size: 2.5rem; color: #ffc107; display: none; margin-top: 15px; font-weight: 900; text-align: center; white-space: pre-wrap; line-height: 1.3; }
+        #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; width: 100%; box-sizing: border-box; }
+        .vote-section { display: flex; justify-content: center; gap: 60px; flex-wrap: wrap; width: 100%; max-width: 1200px; }
+        .vote-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .label-box { width: 220px; padding: 30px 0; border-radius: 20px; font-weight: 900; font-size: 2.8rem; text-align: center; color: #000; box-shadow: 0 6px 12px rgba(0,0,0,0.15); letter-spacing: 5px; }
         .att-label { background-color: #adb5bd; } 
         .pro-label { background-color: #28a745; } 
         .con-label { background-color: #dc3545; } 
-        
-        /* 超大圓形按鈕 */
-        .circle-btn { 
-            width: 220px; 
-            height: 220px; 
-            border-radius: 50%; 
-            border: none; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.25); 
-            transition: transform 0.2s, opacity 0.3s;
-            opacity: 0.15; 
-            cursor: not-allowed; 
-            pointer-events: none;
-        }
-        
+        .circle-btn { width: 220px; height: 220px; border-radius: 50%; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.25); transition: transform 0.2s, opacity 0.3s; opacity: 0.15; cursor: not-allowed; pointer-events: none; }
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
         .circle-btn:active { transform: scale(0.9); }
         .att-btn { background-color: #6c757d; } 
         .pro-btn { background-color: #28a745; }
         .con-btn { background-color: #dc3545; }
         .circle-btn.checked { opacity: 0.4; cursor: not-allowed; pointer-events: none; border: 10px solid #000; }
-
-        /* 主席與監測畫面同樣優化間距 */
-        #admin-view, #monitor-view { 
-            display: none; 
-            flex: 1;
-            width: 100%; 
-            max-width: 1300px; 
-            margin: 0 auto; 
-            padding: 40px 20px; 
-        }
+        #admin-view, #monitor-view { display: none; flex: 1; width: 100%; max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
         .status-header-text { font-size: 2.2rem; font-weight: 700; margin-bottom: 40px; text-align: center; border-bottom: 3px solid #333; padding-bottom: 25px; }
-        
         .color-att { color: #ffffff; }
         .color-pro { color: #28a745; }
         .color-con { color: #dc3545; }
-
-        .monitor-list { 
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 40px 60px;
-            list-style: none; 
-            padding: 0; 
-            font-size: 2.6rem; 
-        }
-        
+        .monitor-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px 60px; list-style: none; padding: 0; font-size: 2.6rem; }
         .v-row { color: #555; transition: 0.3s; }
         .v-row.v-present { color: #fff; }
         .v-row.v-pro { color: #28a745; }
         .v-row.v-con { color: #dc3545; }
         .v-num { display: inline-block; width: 80px; font-weight: 900; }
-
-        /* 主席輸入框調大 */
         .admin-input-section { margin-bottom: 40px; text-align: center; }
-        .vote-title-input { 
-            padding: 25px; font-size: 2rem; width: 85%; font-family: "標楷體"; 
-            border-radius: 15px; border: 1px solid #555; background: #222; color: #fff;
-            height: 180px; line-height: 1.4;
-        }
+        .vote-title-input { padding: 25px; font-size: 2rem; width: 85%; font-family: "標楷體"; border-radius: 15px; border: 1px solid #555; background: #222; color: #fff; height: 180px; line-height: 1.4; }
         .controls { margin-top: 60px; text-align: center; }
         .action-btn { padding: 25px 60px; font-size: 1.8rem; cursor: pointer; border-radius: 12px; border: none; font-family: "標楷體"; margin: 0 20px; font-weight: 700; }
         .btn-start { background: #28a745; color: white; }
@@ -168,14 +55,14 @@
 
     <div class="header">
         <span class="main-title">臺北市私立靜心高級中學學生會議案表決系統</span>
-        <span id="status-header" class="sub-instruction">*請先按下出席按鈕，輸入姓名驗證身分後再進行表決*</span>
+        <span id="status-header" class="sub-instruction">*請先點擊出席按鈕*</span>
         <div id="display-vote-title">表決尚未開始</div>
     </div>
 
     <div id="user-view">
         <div class="vote-section">
             <div class="vote-container">
-                <div id="att-label-text" class="label-box att-label">出席</div>
+                <div class="label-box att-label">出席</div>
                 <button id="att-btn" class="circle-btn att-btn" onclick="executeAttendance()"></button>
             </div>
             <div class="vote-container">
@@ -190,9 +77,7 @@
     </div>
 
     <div id="admin-view">
-        <div class="admin-input-section">
-            <textarea id="vote-title-input" class="vote-title-input" placeholder="請在此輸入表決議案標題（可按 Enter 換行）"></textarea>
-        </div>
+        <div class="admin-input-section"><textarea id="vote-title-input" class="vote-title-input" placeholder="輸入標題"></textarea></div>
         <div id="admin-status-text" class="status-header-text"></div>
         <ul id="admin-monitor-list" class="monitor-list"></ul>
         <div class="controls">
@@ -201,19 +86,14 @@
             <button class="action-btn btn-reset" onclick="adminReset()">系統重置</button>
         </div>
     </div>
-
     <div id="monitor-view">
         <div id="monitor-status-text" class="status-header-text"></div>
         <ul id="shared-monitor-list" class="monitor-list"></ul>
     </div>
 
     <script>
-        // (Firebase 配置與邏輯代碼保持不變，同前次)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E",
-            databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "cssc-vote-app"
-        };
+        // Firebase 設定與初始化
+        const firebaseConfig = { apiKey: "AIzaSyDvS-8vOwps8G3QgsM34qTh80pUiEPzZ0E", databaseURL: "https://cssc-vote-app-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "cssc-vote-app" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const dbVotes = db.ref('detailed_votes');
@@ -228,10 +108,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const view = urlParams.get('view');
 
+        // 載入時檢查 view
         if (view === 'admin') {
             document.body.classList.add('dark-mode');
             document.getElementById('admin-view').style.display = 'block';
-            document.getElementById('status-header').innerText = "主席控制後台";
         } else if (view === 'monitor') {
             document.body.classList.add('dark-mode');
             document.getElementById('monitor-view').style.display = 'block';
@@ -258,35 +138,37 @@
                 document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
             }
 
+            // 渲染監測列表 (渲染邏輯同前)
             const render = (id) => {
-                const el = document.getElementById(id);
-                if(!el) return;
-                el.innerHTML = "";
+                const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
                 allowedUsers.forEach((name, index) => {
                     let stateClass = ""; 
                     if (voterChoiceMap[name]) stateClass = voterChoiceMap[name] === '贊成' ? "v-pro" : "v-con";
                     else if (attendance[name]) stateClass = "v-present";
-                    const formattedNum = (index + 1).toString().padStart(3, '0');
-                    el.innerHTML += `<li class="voter-line"><span class="v-row ${stateClass}"><span class="v-num">${formattedNum}</span>&nbsp;&nbsp;<span>${name}</span></span></li>`;
+                    el.innerHTML += `<li class="voter-line"><span class="v-row ${stateClass}"><span class="v-num">${(index+1).toString().padStart(3,'0')}</span>&nbsp;${name}</span></li>`;
                 });
             };
-            render('admin-monitor-list');
-            render('shared-monitor-list');
+            render('admin-monitor-list'); render('shared-monitor-list');
 
             const statusContent = config.showResult 
-                ? `<span class="color-att">出席：${attCount} 人</span> &nbsp;&nbsp; <span class="color-pro">贊成：${proCount} 票</span> &nbsp;&nbsp; <span class="color-con">反對：${conCount} 票</span>`
-                : `<span class="color-att">出席：白色</span> &nbsp;&nbsp; <span class="color-pro">贊成：綠色</span> &nbsp;&nbsp; <span class="color-con">反對：紅色</span>`;
-
+                ? `<span class="color-att">出席：${attCount}</span> &nbsp; <span class="color-pro">贊成：${proCount}</span> &nbsp; <span class="color-con">反對：${conCount}</span>`
+                : `<span class="color-att">出席：白色</span> &nbsp; <span class="color-pro">贊成：綠色</span> &nbsp; <span class="color-con">反對：紅色</span>`;
+            
             if(document.getElementById('admin-status-text')) document.getElementById('admin-status-text').innerHTML = statusContent;
             if(document.getElementById('monitor-status-text')) document.getElementById('monitor-status-text').innerHTML = statusContent;
 
+            // 投票端邏輯
             if (view !== 'admin' && view !== 'monitor') {
                 if (config.isLocked) {
                     document.getElementById('att-btn').classList.remove('enabled');
-                    document.getElementById('pro-btn').classList.remove('enabled');
-                    document.getElementById('con-btn').classList.remove('enabled');
                     document.getElementById('status-header').innerText = "＊表決尚未開始，請等候主席指示＊";
                 } else {
+                    // 自動嘗試抓取本地名字
+                    let savedName = localStorage.getItem('cssc_user_name');
+                    if (savedName && !currentUserName) {
+                        currentUserName = savedName;
+                    }
+
                     if (currentUserName) {
                         if (voterChoiceMap[currentUserName]) {
                             hasVoted = true;
@@ -298,30 +180,43 @@
                             document.getElementById('att-btn').className = "circle-btn att-btn checked";
                             document.getElementById('pro-btn').classList.add('enabled');
                             document.getElementById('con-btn').classList.add('enabled');
-                            document.getElementById('status-header').innerText = `＊身份確認：${currentUserName}，請進行表決＊`;
+                            document.getElementById('status-header').innerText = `＊身分確認：${currentUserName}，請投票＊`;
+                        } else {
+                            document.getElementById('att-btn').classList.add('enabled');
+                            document.getElementById('status-header').innerText = `＊歡迎回來，${currentUserName}，請點出席＊`;
                         }
                     } else {
                         document.getElementById('att-btn').classList.add('enabled');
-                        document.getElementById('status-header').innerText = "*請先按下出席按鈕，輸入姓名驗證身分後再進行表決*";
+                        document.getElementById('status-header').innerText = "*請點擊出席按鈕驗證身分*";
                     }
                 }
             }
         });
 
-        function startVoting() {
-            const title = document.getElementById('vote-title-input').value.trim();
-            if (!title) { alert("請先輸入表決標題！"); return; }
-            dbConfig.update({ isLocked: false, voteTitle: title, showResult: false });
-        }
-
         function executeAttendance() {
             if (isAttended) return;
-            let nameInput = prompt("請輸入您的姓名以驗證身分：");
+            let savedName = localStorage.getItem('cssc_user_name');
+            let nameInput = savedName || prompt("請輸入您的姓名：");
             if (!nameInput) return;
-            let trimmed = nameInput.trim();
-            if (!allowedUsers.includes(trimmed)) { alert("無此身分權限"); return; }
-            currentUserName = trimmed;
-            dbAttendance.child(currentUserName).set(true);
+            nameInput = nameInput.trim();
+
+            if (!allowedUsers.includes(nameInput)) {
+                alert("無此權限"); localStorage.removeItem('cssc_user_name'); return;
+            }
+
+            dbVotes.once('value', (snapshot) => {
+                const votes = snapshot.val() || {};
+                const hasAlreadyVoted = Object.values(votes).some(v => v.name === nameInput);
+                if (hasAlreadyVoted) {
+                    alert("偵測到此姓名已投過票，不可重複表決。");
+                    localStorage.removeItem('cssc_user_name');
+                    location.reload();
+                    return;
+                }
+                currentUserName = nameInput;
+                localStorage.setItem('cssc_user_name', nameInput);
+                dbAttendance.child(currentUserName).set(true);
+            });
         }
 
         function executeVote(choice) {
@@ -331,14 +226,19 @@
             }
         }
 
+        function startVoting() {
+            const title = document.getElementById('vote-title-input').value.trim();
+            if (!title) return alert("請輸入標題");
+            dbConfig.update({ isLocked: false, voteTitle: title, showResult: false });
+        }
+
         function setShowResult(val) { dbConfig.update({ showResult: val }); }
 
         function adminReset() {
-            if (prompt("管理密碼：") === "0126") {
-                dbVotes.set(null);
-                dbAttendance.set(null);
+            if (prompt("密碼：") === "0126") {
+                dbVotes.set(null); dbAttendance.set(null);
                 dbConfig.set({ showResult: false, isLocked: true, voteTitle: "" });
-                document.getElementById('vote-title-input').value = "";
+                // 重置時不清除本地名字，方便下次直接用，但會清空投票紀錄
                 location.reload();
             }
         }
