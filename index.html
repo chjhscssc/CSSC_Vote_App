@@ -17,40 +17,46 @@
         .system-top-title { text-align: center; font-size: 2.5rem; font-weight: 900; padding: 25px 0 10px 0; letter-spacing: 4px; }
         body.admin-mode .system-top-title { color: #fff; }
 
-        /* 統一資訊列容器 */
+        /* 全域統一資訊列樣式 */
         .info-bar-common { 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            gap: 100px; 
+            gap: 80px; 
             font-weight: 900; 
         }
         
-        /* 兩行首字對齊結構 */
+        /* 每個資訊區塊的水平容器 */
         .info-item { 
             display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; 
-            line-height: 1.4; /* 調整行高讓兩行間隙美觀 */
+            flex-direction: row; 
+            align-items: center; /* 讓右側數值對齊左側兩行字的中間 */
+            gap: 20px;
         }
 
-        /* 兩行字體大小統一為 2.2rem */
-        .info-label, .info-value { 
+        /* 左側標籤：分兩行 */
+        .info-label-stack { 
+            display: flex;
+            flex-direction: column;
+            font-size: 2.2rem; 
+            line-height: 1.2;
+            letter-spacing: 2px;
+            text-align: left;
+        }
+
+        /* 右側數值：維持一行，與左側標籤等大 */
+        .info-value { 
             font-size: 2.2rem; 
             letter-spacing: 2px;
-            white-space: nowrap;
             margin: 0;
             padding: 0;
+            line-height: 1;
         }
 
-        /* 顏色區分邏輯 */
-        /* 1. 投票頁面 (User) - 黃色 */
+        /* 顏色與間距 */
         .user-info-bar { color: #ffc107; margin: 20px 0 30px 0; min-height: 100px; }
-        
-        /* 2. 主席與監測端 (Admin/Monitor) - 白色 */
         .header-info-group { color: #ffffff; }
 
-        /* 管理端與監測端 Header */
         .admin-header { display: none; padding-bottom: 20px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
         .title-bar { display: flex; align-items: center; width: 100%; height: 150px; position: relative; }
         
@@ -59,7 +65,6 @@
             display: flex; 
             justify-content: center; 
             align-items: center;
-            overflow: hidden;
         }
         
         .title-left { 
@@ -71,12 +76,7 @@
             max-width: 95%;
         }
 
-        .header-right-group { 
-            flex: 1; 
-            display: flex; 
-            justify-content: flex-start; 
-            gap: 80px; 
-        }
+        .header-right-group { flex: 1; display: flex; justify-content: flex-start; gap: 60px; }
         
         /* 基礎 UI 組件 */
         #user-view { flex: 1; display: none; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
@@ -106,11 +106,11 @@
     
     <div id="user-info-bar" class="info-bar-common user-info-bar" style="display:none;">
         <div class="info-item">
-            <div class="info-label">表決型態</div>
+            <div class="info-label-stack"><span>表決</span><span>型態</span></div>
             <div class="info-value">記名</div>
         </div>
         <div class="info-item">
-            <div class="info-label">倒數計時</div>
+            <div class="info-label-stack"><span>倒數</span><span>計時</span></div>
             <div id="user-timer-value" class="info-value">01:00</div>
         </div>
     </div>
@@ -122,11 +122,11 @@
             </div>
             <div class="header-right-group info-bar-common header-info-group">
                 <div class="info-item">
-                    <div class="info-label">表決型態</div>
+                    <div class="info-label-stack"><span>表決</span><span>型態</span></div>
                     <div class="info-value">記名</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">倒數計時</div>
+                    <div class="info-label-stack"><span>倒數</span><span>計時</span></div>
                     <div id="timer-display" class="info-value">01:00</div>
                 </div>
             </div>
