@@ -304,7 +304,9 @@
                         cls = 'v-present';
                     } else if (status === "entered") {
                         cls = 'v-row';
-                        displayName += "（已輸入）";
+                        if (view === 'admin') {
+                            displayName += "（已輸入）";
+                        }
                     }
                     el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(i+1).toString().padStart(3,'0')}</span>${displayName}</span></li>`;
                 });
