@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>學生會議案表決系統</title>
     
-    <link rel="icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2" type="image/png">
-    <link rel="apple-touch-icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2">
+    <link rel="icon" href="https://i.ibb.co/SW48bMj/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/SW48bMj/logo.png">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -264,7 +264,7 @@
             else document.getElementById('monitor-view').style.display = 'flex';
         }
 
-        // 核心修正：點擊確認時強制檢查 Firebase
+        // 核心機制：Transaction 原子操作，保證單一名稱只能有一個載具登錄
         function preConfirmName() {
             const nameInput = document.getElementById('pre-name-input').value.trim();
             if (!nameInput || !allowedUsers.includes(nameInput)) {
@@ -272,21 +272,26 @@
                 return;
             }
             
-            // 強制從資料庫抓取最新狀態
-            dbAttendance.child(nameInput).once('value').then((snapshot) => {
-                const val = snapshot.val();
-                // 只要狀態是 entered (已登入待出席) 或 true (已出席)，就直接彈警告
-                if (val === "entered" || val === true) {
-                    alert("此名稱已輸入，請勿重複投票");
-                    document.getElementById('pre-name-input').value = ""; // 清空
-                    return;
+            dbAttendance.child(nameInput).transaction((currentData) => {
+                // 如果資料庫中已經有該名稱的登錄紀錄 (不論是 entered 或 true)
+                if (currentData !== null) {
+                    return; // 中止 transaction，代表有人搶先了
                 }
-                
-                // 通過檢查才寫入
-                currentUserName = nameInput;
-                localStorage.setItem('cssc_user_name', currentUserName);
-                dbAttendance.child(currentUserName).set("entered"); 
-                document.getElementById('pre-auth-section').style.display = 'none';
+                // 否則寫入佔位符
+                return "entered";
+            }, (error, committed) => {
+                if (error) {
+                    alert("網路異常，請再試一次");
+                } else if (!committed) {
+                    // comitted 為 false 代表 transaction return undefined
+                    alert("此名稱已輸入，請勿重複投票");
+                    document.getElementById('pre-name-input').value = "";
+                } else {
+                    // 成功搶到位置
+                    currentUserName = nameInput;
+                    localStorage.setItem('cssc_user_name', currentUserName);
+                    document.getElementById('pre-auth-section').style.display = 'none';
+                }
             });
         }
 
@@ -308,12 +313,6 @@
                 location.reload(); 
             }
 
-            // 監聽阻擋：如果我在本機還沒輸入名字，但輸入框裡的名字已經被別台載具搶先登錄了，主動警告
-            const inputVal = document.getElementById('pre-name-input')?.value.trim();
-            if (!view && !currentUserName && inputVal && (attendance[inputVal] === "entered" || attendance[inputVal] === true)) {
-                 // 這裡不做自動彈窗，避免使用者打字打一半被嚇到，但在 preConfirmName 會擋住。
-            }
-
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
                 updateClock(Math.max(0, 60 - elapsed));
@@ -328,6 +327,7 @@
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
                 
+                // 阻擋重新輸入姓名介面
                 if (currentUserName && (attendance[currentUserName] || hasVoted)) {
                     preSection.style.display = 'none';
                 }
