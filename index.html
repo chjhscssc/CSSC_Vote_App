@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>學生會議案表決系統</title>
     
-    <link rel="icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2" type="image/png">
-    <link rel="apple-touch-icon" href="https://img.sanishtech.com/u/dc6afce6872df6b2539416c254e7b9a9.png?v=2">
+    <link rel="icon" href="https://lh3.googleusercontent.com/d/1y9TcczoEfvIwKxep6G3Ma-thcJv5Y19Z" type="image/png">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1y9TcczoEfvIwKxep6G3Ma-thcJv5Y19Z">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -140,7 +140,8 @@
             font-size: 1.8rem; 
             width: 90%; 
         }
-        /* 僅針對監測頁面放大字體與置中 */
+        
+        /* 監測頁面專用樣式：放大字體並置中 */
         #shared-monitor-list { 
             font-size: 2.5rem; 
             width: 95%;
@@ -148,7 +149,7 @@
         }
 
         .v-row { color: #555; font-weight: 900; } .v-present { color: #ccc; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
-        .v-num { display: inline-block; width: 45px; }
+        .v-num { display: inline-block; width: 60px; } /* 稍微加寬編號寬度以配合大字體 */
         
         #admin-view { display: none; padding: 20px; flex: 1; overflow-y: auto; }
         .admin-input-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
@@ -312,7 +313,6 @@
                     preSection.style.display = 'none';
                 }
 
-                // 修正投票頁面提示語邏輯
                 if (config.isLocked && config.startTime > 0) {
                     statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
                     statusHeader.className = "text-red";
@@ -356,7 +356,9 @@
                     if (voterMap[name]) cls = (voterMap[name]==='贊成'?'v-pro':'v-con');
                     else if (status === true) cls = 'v-present';
                     if (view === 'admin' && status === "entered") displayName += "（已輸入）";
-                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(idx+1).toString().padStart(3,'0')}</span>${displayName}</span></li>`;
+                    
+                    // 在編號與名字之間加入空格
+                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(idx+1).toString().padStart(3,'0')}</span>&nbsp;&nbsp;${displayName}</span></li>`;
                 });
             };
             render('admin-monitor-list'); render('shared-monitor-list');
