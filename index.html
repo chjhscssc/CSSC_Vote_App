@@ -130,7 +130,6 @@
         .status-bar { font-size: 1.8rem; font-weight: 900; margin: 10px 0; text-align: center; }
         .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 10px; overflow-y: auto; }
         
-        /* 嚴格保留原始樣式與顏色 */
         .monitor-list { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
@@ -234,7 +233,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
-        // Session 記憶驗證狀態
         if (view === 'admin' || view === 'monitor') {
             const authKey = `is_auth_${view}`;
             if (!sessionStorage.getItem(authKey)) {
@@ -276,12 +274,6 @@
             let str = (seconds === 60) ? "01:00" : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             if(document.getElementById('timer-display')) document.getElementById('timer-display').innerText = str;
             if(document.getElementById('user-timer-value')) document.getElementById('user-timer-value').innerText = str;
-            if (view === 'admin' && seconds === 0) {
-                dbConfig.once('value', snap => {
-                    const c = snap.val();
-                    if(!c.isLocked && c.startTime > 0) dbConfig.update({ isLocked: true, showResult: true });
-                });
-            }
         }
 
         db.ref().on('value', (snapshot) => {
@@ -309,18 +301,8 @@
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
                 if (currentUserName && (attendance[currentUserName] || hasVoted)) preSection.style.display = 'none';
-                if (config.isLocked && config.startTime > 0) {
-                    statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
-                    statusHeader.className = "text-red";
-                } else if (!config.isLocked && config.startTime > 0) {
-                    if (hasVoted) {
-                        statusHeader.innerText = "*您已完成表決，請靜待主席宣布表決結果*";
-                        statusHeader.className = "text-red";
-                    } else if (attendance[currentUserName] === true) {
-                        isAttended = true;
-                        statusHeader.innerText = `核可：${currentUserName}，請開始表決`;
-                        statusHeader.className = "text-blue";
-                    }
+                if (!config.isLocked && config.startTime > 0) {
+                    if (attendance[currentUserName] === true) isAttended = true;
                 }
             }
 
@@ -333,10 +315,8 @@
             if(document.getElementById('admin-status')) document.getElementById('admin-status').innerHTML = statusHTML;
             if(document.getElementById('monitor-status')) document.getElementById('monitor-status').innerHTML = statusHTML;
 
-            // 調整名單渲染順序為 1 3 5 7 / 2 4 6 8
             const render = (id) => {
                 const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
-                // 順序索引: 0, 2, 4, 6 (第一排) 1, 3, 5, 7 (第二排)
                 const customOrder = [0, 2, 4, 6, 1, 3, 5, 7];
                 customOrder.forEach((idx) => {
                     const name = allowedUsers[idx];
