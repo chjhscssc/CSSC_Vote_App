@@ -128,48 +128,22 @@
         .circle-btn.enabled { opacity: 1; cursor: pointer; pointer-events: auto; }
         
         .status-bar { font-size: 1.8rem; font-weight: 900; margin: 10px 0; text-align: center; }
+        .monitor-container { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 10px; overflow-y: auto; }
         
-        /* --- 修正名單佈局 --- */
-        .monitor-container { 
-            flex: 1; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            padding: 20px; 
-            overflow-y: auto; 
-        }
+        /* 嚴格保留原始樣式與顏色 */
         .monitor-list { 
             display: grid; 
-            /* 分成兩行直排，每排固定寬度 */
-            grid-template-columns: repeat(2, minmax(250px, 1fr)); 
-            /* 固定四列橫排 */
-            grid-template-rows: repeat(4, auto);
-            /* 重要：強制由上到下填滿一欄後，再填下一欄 */
-            grid-auto-flow: column; 
-            gap: 15px 50px; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px 30px; 
             list-style: none; 
             padding: 0; 
-            margin: 0; 
-            font-size: 2rem; 
-            width: fit-content;
+            margin: 0 auto; 
+            font-size: 1.8rem; 
+            width: 90%; 
         }
-        .v-row-wrapper {
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
-        }
-        .v-num { 
-            display: inline-block; 
-            width: 60px; /* 固定編號寬度，確保名字對齊 */
-            font-family: monospace;
-            font-weight: bold;
-        }
-        .v-row { color: #555; font-weight: 900; } 
-        .v-present { color: #ccc; } 
-        .v-pro { color: #28a745; } 
-        .v-con { color: #dc3545; }
-        /* --- 修正結束 --- */
-
+        .v-row { color: #555; font-weight: 900; } .v-present { color: #ccc; } .v-pro { color: #28a745; } .v-con { color: #dc3545; }
+        .v-num { display: inline-block; width: 45px; }
+        
         #admin-view { display: none; padding: 20px; flex: 1; overflow-y: auto; }
         .admin-input-group { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
         .vote-title-input { width: 60%; height: 60px; font-size: 1.2rem; padding: 10px; font-family: '標楷體'; }
@@ -260,13 +234,13 @@
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
+        // Session 記憶驗證狀態
         if (view === 'admin' || view === 'monitor') {
             const authKey = `is_auth_${view}`;
-            let isAlreadyAuth = sessionStorage.getItem(authKey);
-            if (!isAlreadyAuth) {
+            if (!sessionStorage.getItem(authKey)) {
                 const pwd = prompt(`您正試圖進入${view === 'admin' ? '主席' : '監測'}模式，請輸入管理密碼：`);
                 if (pwd !== "0126") {
-                    alert("密碼錯誤，將跳轉回投票頁面。");
+                    alert("密碼錯誤。");
                     window.location.href = window.location.pathname;
                 } else {
                     sessionStorage.setItem(authKey, "true");
@@ -302,7 +276,6 @@
             let str = (seconds === 60) ? "01:00" : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             if(document.getElementById('timer-display')) document.getElementById('timer-display').innerText = str;
             if(document.getElementById('user-timer-value')) document.getElementById('user-timer-value').innerText = str;
-            
             if (view === 'admin' && seconds === 0) {
                 dbConfig.once('value', snap => {
                     const c = snap.val();
@@ -335,13 +308,7 @@
                 const statusHeader = document.getElementById('status-header');
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
-                
-                if (currentUserName && (attendance[currentUserName] || hasVoted)) {
-                    preSection.style.display = 'none';
-                } else {
-                    preSection.style.display = 'block';
-                }
-
+                if (currentUserName && (attendance[currentUserName] || hasVoted)) preSection.style.display = 'none';
                 if (config.isLocked && config.startTime > 0) {
                     statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
                     statusHeader.className = "text-red";
@@ -353,13 +320,6 @@
                         isAttended = true;
                         statusHeader.innerText = `核可：${currentUserName}，請開始表決`;
                         statusHeader.className = "text-blue";
-                    } else if (attendance[currentUserName] === "entered") {
-                        statusHeader.innerText = `核可：${currentUserName}，請按下出席按鈕`;
-                        statusHeader.className = "text-blue";
-                    }
-                } else {
-                    if (currentUserName && (attendance[currentUserName] === "entered" || attendance[currentUserName] === true)) {
-                        statusHeader.innerText = `${currentUserName}委員您好，請稍待主席宣布開始表決`;
                     }
                 }
             }
@@ -373,24 +333,20 @@
             if(document.getElementById('admin-status')) document.getElementById('admin-status').innerHTML = statusHTML;
             if(document.getElementById('monitor-status')) document.getElementById('monitor-status').innerHTML = statusHTML;
 
-            // 渲染名單邏輯
+            // 調整名單渲染順序為 1 3 5 7 / 2 4 6 8
             const render = (id) => {
                 const el = document.getElementById(id); if(!el) return; el.innerHTML = "";
-                allowedUsers.forEach((name, i) => {
+                // 順序索引: 0, 2, 4, 6 (第一排) 1, 3, 5, 7 (第二排)
+                const customOrder = [0, 2, 4, 6, 1, 3, 5, 7];
+                customOrder.forEach((idx) => {
+                    const name = allowedUsers[idx];
                     let status = attendance[name];
                     let displayName = name;
                     let cls = 'v-row';
-                    if (voterMap[name]) {
-                        cls = (voterMap[name]==='贊成'?'v-pro':'v-con');
-                    } else if (status === true) {
-                        cls = 'v-present';
-                    }
-                    
-                    if (view === 'admin' && status === "entered") {
-                        displayName += "（已輸入）";
-                    }
-
-                    el.innerHTML += `<li><div class="v-row-wrapper"><span class="v-num">${(i+1).toString().padStart(3,'0')}</span><span class="${cls}">${displayName}</span></div></li>`;
+                    if (voterMap[name]) cls = (voterMap[name]==='贊成'?'v-pro':'v-con');
+                    else if (status === true) cls = 'v-present';
+                    if (view === 'admin' && status === "entered") displayName += "（已輸入）";
+                    el.innerHTML += `<li><span class="${cls}"><span class="v-num">${(idx+1).toString().padStart(3,'0')}</span>${displayName}</span></li>`;
                 });
             };
             render('admin-monitor-list'); render('shared-monitor-list');
@@ -408,10 +364,7 @@
                 dbConfig.update({ isLocked: false, startTime: Date.now(), showResult: false }); 
             });
         }
-        function executeAttendance() {
-            if (!currentUserName) return;
-            dbAttendance.child(currentUserName).set(true);
-        }
+        function executeAttendance() { if (currentUserName) dbAttendance.child(currentUserName).set(true); }
         function executeVote(c) {
             if (!isAttended || !currentUserName) return;
             dbVotes.once('value', (snapshot) => {
