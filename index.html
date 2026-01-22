@@ -77,14 +77,13 @@
             flex: 1; 
             display: none; 
             flex-direction: column; 
-            justify-content: flex-start; /* 改為向上對齊 */
+            justify-content: flex-start; 
             align-items: center; 
             width: 100%; 
             overflow-y: auto; 
-            padding: 20px 0; /* 增加頂部間距 */
+            padding: 20px 0; 
         }
         
-        /* 讓容器內的元素可以緊湊移動 */
         #user-initial-content {
             width: 100%;
             display: flex;
@@ -175,7 +174,10 @@
     <div id="user-view">
         <div id="user-initial-content">
             <div id="pre-auth-section" style="margin-bottom: 20px;">
-                <input type="text" id="pre-name-input" placeholder="請輸入姓名" style="font-size: 1.2rem; padding: 8px; font-family: '標楷體'; width: 180px; border-radius: 10px; border: 1px solid #ccc;">
+                <input type="text" id="pre-name-input" 
+                       placeholder="請輸入姓名" 
+                       onkeydown="if(event.key === 'Enter') preConfirmName()"
+                       style="font-size: 1.2rem; padding: 8px; font-family: '標楷體'; width: 180px; border-radius: 10px; border: 1px solid #ccc;">
                 <button id="pre-name-confirm" onclick="preConfirmName()" style="padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; margin-left: 5px;">確認姓名</button>
             </div>
             
@@ -297,7 +299,6 @@
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
                 
-                // 只有在重置或沒名字時顯示輸入框
                 if (currentUserName && (attendance[currentUserName] || hasVoted)) {
                     preSection.style.display = 'none';
                 } else {
@@ -401,7 +402,6 @@
             if (prompt("管理密碼：") === "0126") {
                 dbVotes.set(null); dbAttendance.set(null);
                 dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 });
-                // 強制清空本地存儲的名字，讓頁面完全回歸初始
                 localStorage.removeItem('cssc_user_name');
                 if(view === 'admin') location.reload();
             }
