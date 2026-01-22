@@ -51,22 +51,22 @@
         .title-container { 
             flex: 1.2; 
             display: flex; 
-            justify-content: center; 
+            justify-content: flex-start; /* 容器內容整體靠左 */
             align-items: center; 
             height: 100%;
-            padding: 0 15px;
+            padding: 0 20px; /* 增加左右縮排，美觀考量 */
             overflow: hidden; 
             box-sizing: border-box;
         }
         .title-left { 
             color: #ffc107; 
             font-weight: 900; 
-            font-size: 2.3rem; /* 初始大小 */
-            text-align: center; 
+            font-size: 2.3rem; 
+            text-align: left; /* 文字強制靠左對齊 */
             line-height: 1.1; 
-            white-space: nowrap; /* 絕不換行 */
+            white-space: nowrap; 
             display: inline-block;
-            transition: font-size 0.1s; /* 縮放時稍微平滑一點 */
+            transition: font-size 0.1s; 
         }
 
         .header-right-group { flex: 1.5; display: flex; justify-content: flex-start; gap: 40px; }
@@ -210,17 +210,14 @@
             if(document.getElementById('user-timer-value')) document.getElementById('user-timer-value').innerText = str;
         }
 
-        // 核心修正：強制縮小直到塞滿寬度，不使用省略號
         function adjustTitleFontSize() {
             const titleEl = document.getElementById('display-vote-title');
             if (!titleEl) return;
             const container = titleEl.parentElement;
             
-            let fontSize = 2.3; // 預設最大 rem
+            let fontSize = 2.3; 
             titleEl.style.fontSize = fontSize + "rem";
             
-            // 迴圈檢查直到文字寬度 <= 容器寬度 (或縮小到極限 0.4rem)
-            // 使用 scrollWidth 偵測實際文字寬度
             while (titleEl.scrollWidth > container.clientWidth && fontSize > 0.4) {
                 fontSize -= 0.05;
                 titleEl.style.fontSize = fontSize + "rem";
@@ -247,7 +244,6 @@
 
             if (document.getElementById('display-vote-title')) {
                 document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
-                // 延遲一點點執行確保 DOM 文字已渲染
                 setTimeout(adjustTitleFontSize, 10);
             }
 
