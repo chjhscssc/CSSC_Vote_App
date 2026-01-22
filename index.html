@@ -40,19 +40,21 @@
             line-height: 1.4;
         }
 
+        /* 調整計時器容器，確保垂直居中且對齊 */
         .info-item-side { 
             display: flex; 
             flex-direction: row; 
-            align-items: center; 
-            gap: 20px;
+            align-items: center; /* 確保左右兩側垂直中線對齊 */
+            gap: 15px;
         }
 
         .label-split { 
             display: flex;
             flex-direction: column;
-            font-size: clamp(1.5rem, 4vw, 2.2rem); 
-            line-height: 1.4;
+            font-size: clamp(1.2rem, 3.5vw, 2rem); 
+            line-height: 1.1; /* 縮小行高讓四個字更緊湊 */
             text-align: left;
+            justify-content: center;
         }
 
         .font-main { 
@@ -63,7 +65,18 @@
             padding: 0;
         }
 
-        .user-info-bar { color: #ffc107; margin: 10px 0; min-height: 60px; flex-shrink: 0; }
+        /* 核心修改：計時器數字高度對齊國字頂尾 */
+        #user-timer-value, #timer-display {
+            font-size: clamp(2.8rem, 8.5vw, 4.8rem) !important; 
+            font-weight: 900;
+            font-family: "Courier New", monospace; /* 等寬字體更整齊 */
+            color: #ffc107;
+            line-height: 0.9; /* 關鍵：調整行高讓數字視覺高度與兩行國字一致 */
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info-bar { color: #ffc107; margin: 10px 0; min-height: 80px; flex-shrink: 0; }
         .header-info-group { color: #ffffff; }
 
         .admin-header { display: none; padding-bottom: 10px; border-bottom: 1px solid #333; background: #1a1a1a; width: 100%; flex-shrink: 0; }
@@ -71,7 +84,7 @@
         
         .title-container { flex: 1.2; display: flex; justify-content: center; align-items: center; }
         .title-left { color: #ffc107; font-weight: 900; font-size: clamp(1.2rem, 3vw, 2.3rem); text-align: center; line-height: 1.2; max-width: 95%; }
-        .header-right-group { flex: 1; display: flex; justify-content: flex-start; gap: 40px; }
+        .header-right-group { flex: 1.5; display: flex; justify-content: flex-start; gap: 40px; }
         
         #user-view { 
             flex: 1; 
@@ -166,7 +179,7 @@
         </div>
         <div class="info-item-side">
             <div class="label-split"><span>倒數</span><span>計時</span></div>
-            <div id="user-timer-value" class="font-main">01:00</div>
+            <div id="user-timer-value">01:00</div>
         </div>
     </div>
 
@@ -182,7 +195,7 @@
                 </div>
                 <div class="info-item-side">
                     <div class="label-split"><span>倒數</span><span>計時</span></div>
-                    <div id="timer-display" class="font-main">01:00</div>
+                    <div id="timer-display">01:00</div>
                 </div>
             </div>
         </div>
@@ -264,30 +277,21 @@
             else document.getElementById('monitor-view').style.display = 'flex';
         }
 
-        // 核心機制：Transaction 原子操作，保證單一名稱只能有一個載具登錄
         function preConfirmName() {
             const nameInput = document.getElementById('pre-name-input').value.trim();
             if (!nameInput || !allowedUsers.includes(nameInput)) {
                 alert("名單中無此姓名");
                 return;
             }
-            
             dbAttendance.child(nameInput).transaction((currentData) => {
-                // 如果資料庫中已經有該名稱的登錄紀錄 (不論是 entered 或 true)
-                if (currentData !== null) {
-                    return; // 中止 transaction，代表有人搶先了
-                }
-                // 否則寫入佔位符
+                if (currentData !== null) return;
                 return "entered";
             }, (error, committed) => {
-                if (error) {
-                    alert("網路異常，請再試一次");
-                } else if (!committed) {
-                    // comitted 為 false 代表 transaction return undefined
+                if (error) alert("網路異常");
+                else if (!committed) {
                     alert("此名稱已輸入，請勿重複投票");
                     document.getElementById('pre-name-input').value = "";
                 } else {
-                    // 成功搶到位置
                     currentUserName = nameInput;
                     localStorage.setItem('cssc_user_name', currentUserName);
                     document.getElementById('pre-auth-section').style.display = 'none';
@@ -308,32 +312,22 @@
             const attendance = data.attendance_list || {};
             const votes = data.detailed_votes || {};
 
-            if (!view && config.resetSignal) {
-                dbConfig.update({ resetSignal: 0 }); 
-                location.reload(); 
-            }
+            if (!view && config.resetSignal) { dbConfig.update({ resetSignal: 0 }); location.reload(); }
 
             if (!config.isLocked && config.startTime > 0) {
                 const elapsed = Math.floor((Date.now() - config.startTime) / 1000);
                 updateClock(Math.max(0, 60 - elapsed));
             } else if (config.isLocked && config.startTime > 0) { updateClock(0); } else { updateClock(60); }
 
-            if (document.getElementById('display-vote-title')) {
-                document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
-            }
+            if (document.getElementById('display-vote-title')) document.getElementById('display-vote-title').innerText = config.voteTitle || "表決尚未開始";
 
             if (!view) {
                 const statusHeader = document.getElementById('status-header');
                 const preSection = document.getElementById('pre-auth-section');
                 let hasVoted = Object.values(votes).some(v => v.name === currentUserName);
-                
-                // 阻擋重新輸入姓名介面
-                if (currentUserName && (attendance[currentUserName] || hasVoted)) {
-                    preSection.style.display = 'none';
-                }
+                if (currentUserName && (attendance[currentUserName] || hasVoted)) preSection.style.display = 'none';
 
                 const proBtn = document.getElementById('pro-btn'), conBtn = document.getElementById('con-btn'), attBtn = document.getElementById('att-btn');
-                
                 if (config.isLocked && config.startTime > 0) {
                     statusHeader.innerText = "*表決時間已結束，請靜待主席宣布表決結果*";
                     statusHeader.className = "text-red";
