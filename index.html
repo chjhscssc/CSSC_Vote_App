@@ -223,20 +223,33 @@
         const urlParams = new URLSearchParams(window.location.search);
         let view = urlParams.get('view');
 
+        // 修正：使用 sessionStorage 記憶驗證狀態
         if (view === 'admin' || view === 'monitor') {
-            const pwd = prompt(`您正試圖進入${view === 'admin' ? '主席' : '監測'}模式，請輸入管理密碼：`);
-            if (pwd !== "0126") {
-                alert("密碼錯誤，將跳轉回投票頁面。");
-                window.location.href = window.location.pathname;
+            const authKey = `is_auth_${view}`;
+            let isAlreadyAuth = sessionStorage.getItem(authKey);
+
+            if (!isAlreadyAuth) {
+                const pwd = prompt(`您正試圖進入${view === 'admin' ? '主席' : '監測'}模式，請輸入管理密碼：`);
+                if (pwd !== "0126") {
+                    alert("密碼錯誤，將跳轉回投票頁面。");
+                    window.location.href = window.location.pathname;
+                } else {
+                    sessionStorage.setItem(authKey, "true"); // 記錄已驗證
+                    setupView();
+                }
             } else {
-                document.body.classList.add('admin-mode');
-                document.getElementById('header-section').style.display = 'block';
-                if(view === 'admin') document.getElementById('admin-view').style.display = 'block';
-                else document.getElementById('monitor-view').style.display = 'flex';
+                setupView(); // 已經驗證過，直接進入
             }
         } else {
             document.getElementById('user-view').style.display = 'flex';
             document.getElementById('user-info-bar').style.display = 'flex'; 
+        }
+
+        function setupView() {
+            document.body.classList.add('admin-mode');
+            document.getElementById('header-section').style.display = 'block';
+            if(view === 'admin') document.getElementById('admin-view').style.display = 'block';
+            else document.getElementById('monitor-view').style.display = 'flex';
         }
 
         function preConfirmName() {
@@ -334,7 +347,7 @@
                     }
                 } else {
                     if (currentUserName && (attendance[currentUserName] === "entered" || attendance[currentUserName] === true)) {
-                        statusHeader.innerText = "已輸入姓名，請稍待主席宣布開始表決";
+                        statusHeader.innerText = `${currentUserName}委員您好，請稍待主席宣布開始表決`;
                     } else {
                         statusHeader.innerText = "表決尚未開始，請先輸入名字並稍待主席宣布開始表決";
                     }
@@ -398,14 +411,17 @@
                 if (confirm(`確定投給「${c}」？`)) dbVotes.push({ name: currentUserName, choice: c, timestamp: Date.now() });
             });
         }
+
+        // 修正：重置時不再要求輸入密碼
         function adminReset() {
-            if (prompt("管理密碼：") === "0126") {
+            if (confirm("確定要重置所有表決數據嗎？")) {
                 dbVotes.set(null); dbAttendance.set(null);
                 dbConfig.set({ isLocked: true, voteTitle: "", startTime: 0, showResult: false, resetSignal: 1 });
                 localStorage.removeItem('cssc_user_name');
                 if(view === 'admin') location.reload();
             }
         }
+
         setInterval(() => {
             dbConfig.once('value', s => {
                 const c = s.val() || {};
